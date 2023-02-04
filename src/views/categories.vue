@@ -10,6 +10,7 @@
     </el-row>
     <el-row>
       <el-table :data="tableData" style="width: 100%">
+        <el-table-column prop="id" label="Id" width="200px"/>
         <el-table-column prop="name" label="Name" width="300px"/>
         <el-table-column prop="createdDate" label="Data" width="300px"/>
         <el-table-column prop="parent.name" label="Parent"/>
@@ -35,6 +36,9 @@
     </el-row>
     <el-dialog v-model="formVisible" title="Shipping address">
       <el-form :model="form">
+        <el-form-item label="Id">
+          <el-input v-model="form.id"/>
+        </el-form-item>
         <el-form-item label="Name">
           <el-input v-model="form.name" autocomplete="off"/>
         </el-form-item>
@@ -72,18 +76,19 @@ import axios from  'axios'
 export default {
   name: "categories",
   setup() {
-    const { getCategories, setCategory } = useStore();
-    return { getCategories, setCategory }
+    const { getCategories, setCategories } = useStore();
+    return { getCategories, setCategories}
   },
   data() {
     return {
       formVisible: false,
       form: {
+        index: null,
         id: null,
         name: '',
         parent: null,
       },
-      tableData: []
+      tableData: this.getCategories,
     }
   },
   created(){
@@ -105,36 +110,12 @@ export default {
       })
     },
     saveForm() {
-      if (this.form.id != null) {
-        axios.put('http://localhost:8080/api/category/' + this.form.id, this.form)
-        .then(() => {
-          this.loadData()
-        })
-        .catch((ex) => {
-          this.$notify({
-            title: 'Error',
-            message: ex.response.data.error,
-            type: 'error',
-          })
-        })
+      if (this.form.index !== null){
+        this.tableData[this.form] = JSON.parse(JSON.stringify(this.form))
       } else {
-        axios.post('http://localhost:8080/api/category', this.form)
-            .then(() => {
-              this.loadData()
-            })
-            .catch((ex) => {
-              this.$notify({
-                title: 'Error',
-                message: ex.response.data.error,
-                type: 'error',
-              })
-            })
+        this.tableData.push(JSON.parse(JSON.stringify(this.form)))
       }
-      this.form = {
-            id : null,
-            name : '',
-            parent : null,
-      };
+      this.setCategories(this.tableData)
       this.formVisible = false;
     },
     formEdit(props) {

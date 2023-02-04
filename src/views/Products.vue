@@ -10,6 +10,7 @@
     </el-row>
     <el-row>
       <el-table :data="tableData" style="width: 100%">
+        <el-table-column prop="id" label="Id" width="200px"/>
         <el-table-column prop="name" label="Name" width="180px"/>
         <el-table-column prop="createdDate" label="Date" width="250px"/>
         <el-table-column prop="category.name" label="Category name"/>
@@ -36,12 +37,15 @@
     </el-row>
     <el-dialog v-model="dialogVisible" title="Shipping address">
       <el-form :model="form">
-        <el-form-item prop="name" label="Name">
+        <el-form-item label="Id">
+          <el-input v-model="form.id"/>
+        </el-form-item>
+        <el-form-item label="Name">
           <el-input v-model="form.name"></el-input>
         </el-form-item>
-        <el-form-item prop="category"  label="Category name">
-          <el-select v-model="form.category" value-key="id">
-            <el-option v-for="(item, index) of categories"
+        <el-form-item  label="Category name">
+          <el-select v-model="form.category" value-key="id" placeholder="Select">
+            <el-option v-for="(item, index) of getCategories"
                        :key="index"
                        :label="item.name"
                        :value="item"
@@ -67,13 +71,19 @@
 
 <script>
 import axios from 'axios';
+import useStore from "../store/store";
 
 export default {
   name: "Products",
+  setup() {
+    const { getCategories, setCategories, getProducts, setProducts } = useStore();
+    return { getCategories, setCategories, getProducts, setProducts }
+  },
   data() {
     return {
       dialogVisible: false,
       form: {
+        index:null,
         id: null,
         name: '',
         price: null,
@@ -81,8 +91,8 @@ export default {
         expireDate: null,
         category: null,
       },
-      tableData: [],
-      categories: [],
+      tableData: this.getProducts,
+      getCategories: this.getCategories,
     }
   },
   methods: {
@@ -94,36 +104,18 @@ export default {
       this.dialogVisible = true
     },
     formSaqlash() {
-      if (this.form.id != null) {
-        axios.put("http://localhost:8080/api/product/" + this.form.id, this.form)
-        .then(() => {
-          this.getAllProducts();
-        })
-        .catch((ex) => {
-          this.$notify({
-            title: 'Error',
-            message: ex.response.data.error,
-            type: 'error'
-          })
-        })
-      } else {
-        axios.post('http://localhost:8080/api/product', this.form)
-        .then(() => {
-          this.getAllProducts();
-        })
-        .catch((ex) => {
-          this.$notify({
-            title: 'Error',
-            message: ex.response.data.error,
-            type: 'error'
-          })
-        })
-      }
+        if (this.form.index !== null){
+          this.tableData[this.form] = JSON.parse(JSON.stringify(this.form))
+        } else {
+          this.tableData.push(JSON.parse(JSON.stringify(this.form)))
+        }
+        this.setProducts(this.tableData)
       this.dialogVisible = false
       this.removeForm();
     },
     removeForm(){
       this.form = {
+        index: null,
         id: null,
         name: '',
         price: null,

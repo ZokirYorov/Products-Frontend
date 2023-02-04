@@ -5,10 +5,12 @@ const useStore = defineStore('store', {
     state: () => ({
         products: useStorage('products', []),
         accounts: useStorage('accounts', []),
+        categories: useStorage('categories',[])
     }),
     getters: {
         getProducts: (state) => state.products,
         getAccounts: (state) => state.accounts,
+        getCategories:(state) => state.categories,
     },
     actions: {
         setProducts(products) {
@@ -17,6 +19,9 @@ const useStore = defineStore('store', {
         setAccounts(accounts) {
             this.accounts = accounts
         },
+        setCategories(categories){
+            this.categories = categories
+        }
     }
 })
 
